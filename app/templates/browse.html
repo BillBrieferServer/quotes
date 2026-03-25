@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% set active = "browse" %}
+{% block content %}
+
+<div class="section-header">All Topics</div>
+
+{% if topics %}
+<div class="topics">
+    {% for t in topics %}
+    <a href="/topic/{{ t.id }}" class="pill">{{ t.name }}<span class="count">{{ t.count }}</span></a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty">
+    <div class="icon">&#127991;</div>
+    <p>No topics yet. Add some when you create your first entry.</p>
+</div>
+{% endif %}
+
+{% endblock %}

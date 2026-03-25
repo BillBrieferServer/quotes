@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% set active = "add" %}
+{% block content %}
+
+<div class="type-toggle">
+    <a href="/add?type=quote" class="{% if entry_type == 'quote' %}active{% endif %}">Quote</a>
+    <a href="/add?type=note" class="{% if entry_type == 'note' %}active{% endif %}">Note</a>
+</div>
+
+<form method="post" action="/add" enctype="multipart/form-data">
+    <input type="hidden" name="entry_type" value="{{ entry_type }}">
+
+    <div class="form-group">
+        <label>{% if entry_type == 'quote' %}Quote{% else %}Note{% endif %}</label>
+        <textarea name="content" placeholder="Paste or type here..." autofocus></textarea>
+    </div>
+
+    {% if entry_type == 'quote' %}
+    <div class="form-group">
+        <label>Author (optional)</label>
+        <input type="text" name="author" placeholder="Who said it?">
+    </div>
+
+    <div class="form-group">
+        <label>Source (optional)</label>
+        <input type="text" name="source" placeholder="Book, article, speech...">
+    </div>
+    {% else %}
+    <input type="hidden" name="author" value="">
+    <input type="hidden" name="source" value="">
+    {% endif %}
+
+    {% if topics %}
+    <div class="form-group">
+        <label>Topics</label>
+        <div class="topic-grid">
+            {% for t in topics %}
+            <div class="topic-check">
+                <input type="checkbox" name="existing_topics" value="{{ t.id }}" id="topic_{{ t.id }}">
+                <label for="topic_{{ t.id }}">{{ t.name }}</label>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="form-group">
+        <label>New Topics (comma separated)</label>
+        <input type="text" name="new_topics" placeholder="Leadership, Philosophy...">
+    </div>
+
+    <div class="form-group">
+        <label>Image (optional)</label>
+        <input type="file" name="image" accept="image/*" style="color:var(--text);font-size:0.9rem;">
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save</button>
+</form>
+
+{% endblock %}

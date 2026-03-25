@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% set active = "" %}
+{% block content %}
+
+<div style="display:flex;gap:8px;margin-top:8px;margin-bottom:12px;">
+    <button onclick="document.getElementById('edit-form').style.display='block'; document.getElementById('view-card').style.display='none'; this.parentElement.style.display='none';" class="btn btn-primary" style="width:auto;padding:8px 20px;font-size:0.9rem;">Edit</button>
+    <form method="post" action="/entry/{{ entry.id }}/delete" style="margin:0;" onsubmit="return confirm('Delete this entry?');">
+        <button type="submit" class="btn btn-danger">Delete</button>
+    </form>
+</div>
+
+<div id="view-card" class="card {{ entry.type }}">
+    <div style="margin-bottom:8px;"><span class="badge {{ entry.type }}">{{ entry.type }}</span></div>
+    <div class="card-content" id="display-content">{{ entry.content|bold_first_line|safe }}</div>
+    {% if entry.image %}
+    <div style="margin-top:12px;">
+        <img src="/uploads/{{ entry.image }}" style="max-width:100%;border-radius:8px;">
+    </div>
+    {% endif %}
+    {% if entry.author or entry.source %}
+    <div class="card-meta">
+        {% if entry.author %}<span>{{ entry.author }}</span>{% endif %}
+        {% if entry.author and entry.source %} &mdash; {% endif %}
+        {% if entry.source %}<span class="source">{{ entry.source }}</span>{% endif %}
+    </div>
+    {% endif %}
+    {% if entry.topics %}
+    <div class="topics">
+        {% for t in entry.topics.split(', ') %}
+        <span class="pill">{{ t }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <div class="card-meta" style="margin-top:12px;">
+        Added {{ entry.created_at[:16] }}
+    </div>
+</div>
+
+<form id="edit-form" method="post" action="/entry/{{ entry.id }}/edit" enctype="multipart/form-data" style="display:none;">
+    <div class="form-group">
+        <label>Content</label>
+        <textarea name="content">{{ entry.content }}</textarea>
+    </div>
+
+    {% if entry.type == 'quote' %}
+    <div class="form-group">
+        <label>Author</label>
+        <input type="text" name="author" value="{{ entry.author }}">
+    </div>
+    <div class="form-group">
+        <label>Source</label>
+        <input type="text" name="source" value="{{ entry.source }}">
+    </div>
+    {% else %}
+    <input type="hidden" name="author" value="">
+    <input type="hidden" name="source" value="">
+    {% endif %}
+
+    {% if all_topics %}
+    <div class="form-group">
+        <label>Topics</label>
+        <div class="topic-grid">
+            {% for t in all_topics %}
+            <div class="topic-check">
+                <input type="checkbox" name="existing_topics" value="{{ t.id }}" id="edit_topic_{{ t.id }}"
+                    {% if t.id in entry_topic_ids %}checked{% endif %}>
+                <label for="edit_topic_{{ t.id }}">{{ t.name }}</label>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="form-group">
+        <label>New Topics (comma separated)</label>
+        <input type="text" name="new_topics" placeholder="Add new topics...">
+    </div>
+
+    <div class="form-group">
+        <label>Image</label>
+        {% if entry.image %}
+        <div style="margin-bottom:8px;">
+            <img src="/uploads/{{ entry.image }}" style="max-width:200px;border-radius:8px;">
+            <div style="margin-top:6px;">
+                <label style="font-size:0.85rem;color:var(--accent);"><input type="checkbox" name="remove_image" value="1"> Remove image</label>
+            </div>
+        </div>
+        {% endif %}
+        <input type="file" name="image" accept="image/*" style="color:var(--text);font-size:0.9rem;">
+    </div>
+
+    <div style="display:flex;gap:8px;">
+        <button type="submit" class="btn btn-primary">Save</button>
+    </div>
+</form>
+
+{% endblock %}

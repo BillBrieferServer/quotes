@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% set active = "search" %}
+{% block content %}
+
+<form method="get" action="/search">
+    <div class="search-bar">
+        <input type="text" name="q" value="{{ query }}" placeholder="Search quotes, notes, topics..." autofocus>
+        <button type="submit">Go</button>
+    </div>
+</form>
+
+{% if query %}
+<div class="section-header">{{ entries|length }} result{{ 's' if entries|length != 1 }}</div>
+
+{% for e in entries %}
+<a href="/entry/{{ e.id }}" style="text-decoration:none;color:inherit;">
+<div class="card {{ e.type }}">
+    <div style="margin-bottom:6px;"><span class="badge {{ e.type }}">{{ e.type }}</span></div>
+    <div class="card-content">{{ e.content[:200]|bold_first_line|safe }}{% if e.content|length > 200 %}...{% endif %}</div>
+    {% if e.author or e.source %}
+    <div class="card-meta">
+        {% if e.author %}<span>{{ e.author }}</span>{% endif %}
+        {% if e.author and e.source %} &mdash; {% endif %}
+        {% if e.source %}<span class="source">{{ e.source }}</span>{% endif %}
+    </div>
+    {% endif %}
+    {% if e.topics %}
+    <div class="topics">
+        {% for t in e.topics.split(', ') %}
+        <span class="pill">{{ t }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+</a>
+{% endfor %}
+
+{% if not entries %}
+<div class="empty">
+    <div class="icon">&#128270;</div>
+    <p>No results for "{{ query }}"</p>
+</div>
+{% endif %}
+
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,11 @@
+services:
+  app:
+    build: .
+    container_name: quotes-app
+    ports:
+      - "8050:8050"
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+    restart: unless-stopped
