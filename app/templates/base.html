@@ -8,8 +8,14 @@
 </head>
 <body>
     <div class="header">
-        <h1>Quotes</h1>
-        <a href="/logout">Logout</a>
+        <h1>&#9998; Quotes</h1>
+        <nav class="top-nav">
+            <a href="/" class="{% if active == 'home' %}active{% endif %}">&#128221; Notes</a>
+            <a href="/add?type=quote" class="{% if active == 'add' %}active{% endif %}">&#10133; Add</a>
+            <a href="/browse" class="{% if active == 'browse' %}active{% endif %}">&#128278; Topics</a>
+            <a href="/search" class="{% if active == 'search' %}active{% endif %}">&#128270; Search</a>
+        </nav>
+        <a href="/logout" class="logout-link">Logout</a>
     </div>
 
     <div class="page-body {% block body_class %}scrollable{% endblock %}">
@@ -17,24 +23,5 @@
         {% block content %}{% endblock %}
     </div>
     </div>
-
-    <nav class="bottom-nav">
-        <a href="/" class="{% if active == 'home' %}active{% endif %}">
-            <span class="nav-icon">&#9776;</span>
-            <span>Notes</span>
-        </a>
-        <a href="/add?type=quote" class="{% if active == 'add' %}active{% endif %}">
-            <span class="nav-icon">&#43;</span>
-            <span>Add</span>
-        </a>
-        <a href="/browse" class="{% if active == 'browse' %}active{% endif %}">
-            <span class="nav-icon">&#9733;</span>
-            <span>Topics</span>
-        </a>
-        <a href="/search" class="{% if active == 'search' %}active{% endif %}">
-            <span class="nav-icon">&#128269;</span>
-            <span>Search</span>
-        </a>
-    </nav>
 </body>
 </html>

@@ -32,7 +32,6 @@ body {
 
 .page-body.scrollable {
     overflow-y: auto;
-    padding-bottom: 70px;
 }
 
 .container {
@@ -49,44 +48,43 @@ body {
 /* Header */
 .header {
     background: var(--surface);
-    padding: 14px 16px;
+    padding: 0 16px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid var(--surface2);
+    flex-shrink: 0;
+    gap: 8px;
 }
 .header h1 {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     font-weight: 600;
+    white-space: nowrap;
+    padding: 12px 0;
 }
-.header a { color: var(--text-dim); text-decoration: none; font-size: 0.85rem; }
+.logout-link { color: var(--text-dim); text-decoration: none; font-size: 0.8rem; white-space: nowrap; padding: 12px 0; }
 
-/* Bottom Nav */
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--surface);
+/* Top Nav (inside header) */
+.top-nav {
     display: flex;
-    justify-content: space-around;
-    padding: 8px 0 12px;
-    border-top: 1px solid var(--surface2);
-    z-index: 100;
+    flex: 1;
+    justify-content: center;
+    gap: 4px;
 }
-.bottom-nav a {
-    color: var(--text-dim);
+.top-nav a {
+    color: #fff;
     text-decoration: none;
-    font-size: 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 12px 18px;
     text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    padding: 4px 12px;
 }
-.bottom-nav a.active { color: var(--accent); }
-.bottom-nav .nav-icon { font-size: 1.4rem; }
+.top-nav a.active {
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+}
+.top-nav a:hover {
+    color: var(--text);
+}
 
 /* Cards */
 .card {

@@ -36,10 +36,13 @@
     </div>
 </div>
 
-<form id="edit-form" method="post" action="/entry/{{ entry.id }}/edit" enctype="multipart/form-data" style="display:none;">
+<form id="edit-form" method="post" action="/entry/{{ entry.id }}/edit" enctype="multipart/form-data" style="display:none;padding-bottom:80px;">
+    <div style="margin-bottom:16px;">
+        <button type="submit" class="btn btn-primary">Save</button>
+    </div>
     <div class="form-group">
         <label>Content</label>
-        <textarea name="content">{{ entry.content }}</textarea>
+        <textarea name="content" style="min-height:300px;">{{ entry.content }}</textarea>
     </div>
 
     {% if entry.type == 'quote' %}
@@ -56,6 +59,24 @@
     <input type="hidden" name="source" value="">
     {% endif %}
 
+    <div class="form-group">
+        <label>Image</label>
+        {% if entry.image %}
+        <div style="margin-bottom:8px;">
+            <img src="/uploads/{{ entry.image }}" style="max-width:200px;border-radius:8px;">
+            <div style="margin-top:6px;">
+                <label style="font-size:0.85rem;color:var(--accent);"><input type="checkbox" name="remove_image" value="1"> Remove image</label>
+            </div>
+        </div>
+        {% endif %}
+        <input type="file" name="image" accept="image/*" style="color:var(--text);font-size:0.9rem;">
+    </div>
+
+    <div class="form-group">
+        <label>New Topics (comma separated)</label>
+        <input type="text" name="new_topics" placeholder="Add new topics...">
+    </div>
+
     {% if all_topics %}
     <div class="form-group">
         <label>Topics</label>
@@ -71,27 +92,7 @@
     </div>
     {% endif %}
 
-    <div class="form-group">
-        <label>New Topics (comma separated)</label>
-        <input type="text" name="new_topics" placeholder="Add new topics...">
-    </div>
 
-    <div class="form-group">
-        <label>Image</label>
-        {% if entry.image %}
-        <div style="margin-bottom:8px;">
-            <img src="/uploads/{{ entry.image }}" style="max-width:200px;border-radius:8px;">
-            <div style="margin-top:6px;">
-                <label style="font-size:0.85rem;color:var(--accent);"><input type="checkbox" name="remove_image" value="1"> Remove image</label>
-            </div>
-        </div>
-        {% endif %}
-        <input type="file" name="image" accept="image/*" style="color:var(--text);font-size:0.9rem;">
-    </div>
-
-    <div style="display:flex;gap:8px;">
-        <button type="submit" class="btn btn-primary">Save</button>
-    </div>
 </form>
 
 {% endblock %}
