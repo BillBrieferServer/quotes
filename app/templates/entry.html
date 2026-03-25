@@ -42,7 +42,7 @@
     </div>
     <div class="form-group">
         <label>Content</label>
-        <textarea name="content" style="min-height:300px;">{{ entry.content }}</textarea>
+        <textarea name="content" id="edit-content" style="min-height:100px;overflow:hidden;">{{ entry.content }}</textarea>
     </div>
 
     {% if entry.type == 'quote' %}
@@ -95,4 +95,16 @@
 
 </form>
 
+<script>
+function autoGrow(el) {
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+}
+var ta = document.getElementById('edit-content');
+// Resize when edit form becomes visible
+var editBtn = document.querySelector('[onclick]');
+var origClick = editBtn.getAttribute('onclick');
+editBtn.setAttribute('onclick', origClick + " setTimeout(function(){ autoGrow(document.getElementById('edit-content')); }, 10);");
+ta.addEventListener('input', function(){ autoGrow(this); });
+</script>
 {% endblock %}
