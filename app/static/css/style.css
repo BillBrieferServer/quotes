@@ -167,6 +167,9 @@ textarea:focus, input:focus { outline: none; border-color: var(--accent); }
     background: var(--accent);
     color: white;
 }
+.type-toggle.blue a.active {
+    background: #2a7fff;
+}
 
 /* Buttons */
 .btn {
