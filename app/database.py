@@ -45,5 +45,10 @@ async def init_db():
     except Exception:
         await db.execute("ALTER TABLE entries ADD COLUMN image TEXT DEFAULT ''")
 
+    try:
+        await db.execute("SELECT deleted_at FROM entries LIMIT 1")
+    except Exception:
+        await db.execute("ALTER TABLE entries ADD COLUMN deleted_at TIMESTAMP DEFAULT NULL")
+
     await db.commit()
     await db.close()

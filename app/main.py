@@ -107,6 +107,7 @@ async def home(request: Request, sort: str = "alpha"):
         FROM entries e
         LEFT JOIN entry_topics et ON e.id = et.entry_id
         LEFT JOIN topics t ON et.topic_id = t.id
+        WHERE e.deleted_at IS NULL
         GROUP BY e.id
         {order}
     """)
@@ -114,10 +115,12 @@ async def home(request: Request, sort: str = "alpha"):
         SELECT t.id, t.name, COUNT(et.entry_id) as count
         FROM topics t
         LEFT JOIN entry_topics et ON t.id = et.topic_id
+        LEFT JOIN entries e ON et.entry_id = e.id AND e.deleted_at IS NULL
+        WHERE e.id IS NOT NULL
         GROUP BY t.id
         ORDER BY t.name COLLATE NOCASE
     """)
-    total = await db.execute_fetchall("SELECT COUNT(*) as c FROM entries")
+    total = await db.execute_fetchall("SELECT COUNT(*) as c FROM entries WHERE deleted_at IS NULL")
     await db.close()
     return templates.TemplateResponse("home.html", {
         "request": request,
@@ -211,6 +214,8 @@ async def browse_topics(request: Request):
         SELECT t.id, t.name, COUNT(et.entry_id) as count
         FROM topics t
         LEFT JOIN entry_topics et ON t.id = et.topic_id
+        LEFT JOIN entries e ON et.entry_id = e.id AND e.deleted_at IS NULL
+        WHERE e.id IS NOT NULL
         GROUP BY t.id
         ORDER BY t.name COLLATE NOCASE
     """)
@@ -233,7 +238,7 @@ async def topic_view(request: Request, topic_id: int):
         JOIN entry_topics et ON e.id = et.entry_id
         LEFT JOIN entry_topics et2 ON e.id = et2.entry_id
         LEFT JOIN topics t ON et2.topic_id = t.id
-        WHERE et.topic_id = ?
+        WHERE et.topic_id = ? AND e.deleted_at IS NULL
         GROUP BY e.id
         ORDER BY e.created_at DESC
     """, (topic_id,))
@@ -259,7 +264,7 @@ async def search(request: Request, q: str = ""):
             FROM entries e
             LEFT JOIN entry_topics et ON e.id = et.entry_id
             LEFT JOIN topics t ON et.topic_id = t.id
-            WHERE e.content LIKE ? OR e.source LIKE ? OR e.author LIKE ? OR t.name LIKE ?
+            WHERE e.deleted_at IS NULL AND (e.content LIKE ? OR e.source LIKE ? OR e.author LIKE ? OR t.name LIKE ?)
             GROUP BY e.id
             ORDER BY e.created_at DESC
         """, (f"%{q}%", f"%{q}%", f"%{q}%", f"%{q}%"))
@@ -379,7 +384,51 @@ async def delete_entry(request: Request, entry_id: int):
     if not is_authenticated(request):
         return RedirectResponse("/login", status_code=303)
     db = await get_db()
-    # Delete image file
+    await db.execute("UPDATE entries SET deleted_at=CURRENT_TIMESTAMP WHERE id=?", (entry_id,))
+    await db.commit()
+    await db.close()
+    return RedirectResponse("/", status_code=303)
+
+
+# --- Trash ---
+
+@app.get("/trash", response_class=HTMLResponse)
+async def trash_view(request: Request):
+    if not is_authenticated(request):
+        return RedirectResponse("/login", status_code=303)
+    db = await get_db()
+    entries = await db.execute_fetchall("""
+        SELECT e.*, GROUP_CONCAT(t.name, ', ') as topics
+        FROM entries e
+        LEFT JOIN entry_topics et ON e.id = et.entry_id
+        LEFT JOIN topics t ON et.topic_id = t.id
+        WHERE e.deleted_at IS NOT NULL
+        GROUP BY e.id
+        ORDER BY e.deleted_at DESC
+    """)
+    await db.close()
+    return templates.TemplateResponse("trash.html", {
+        "request": request,
+        "entries": entries,
+    })
+
+
+@app.post("/entry/{entry_id}/restore")
+async def restore_entry(request: Request, entry_id: int):
+    if not is_authenticated(request):
+        return RedirectResponse("/login", status_code=303)
+    db = await get_db()
+    await db.execute("UPDATE entries SET deleted_at=NULL WHERE id=?", (entry_id,))
+    await db.commit()
+    await db.close()
+    return RedirectResponse("/trash", status_code=303)
+
+
+@app.post("/entry/{entry_id}/permanent-delete")
+async def permanent_delete_entry(request: Request, entry_id: int):
+    if not is_authenticated(request):
+        return RedirectResponse("/login", status_code=303)
+    db = await get_db()
     old = await db.execute_fetchall("SELECT image FROM entries WHERE id=?", (entry_id,))
     if old and old[0]["image"]:
         old_path = os.path.join(UPLOAD_DIR, old[0]["image"])
@@ -388,4 +437,21 @@ async def delete_entry(request: Request, entry_id: int):
     await db.execute("DELETE FROM entries WHERE id=?", (entry_id,))
     await db.commit()
     await db.close()
-    return RedirectResponse("/", status_code=303)
+    return RedirectResponse("/trash", status_code=303)
+
+
+@app.post("/trash/empty")
+async def empty_trash(request: Request):
+    if not is_authenticated(request):
+        return RedirectResponse("/login", status_code=303)
+    db = await get_db()
+    trashed = await db.execute_fetchall("SELECT image FROM entries WHERE deleted_at IS NOT NULL AND image != ''")
+    for row in trashed:
+        if row["image"]:
+            old_path = os.path.join(UPLOAD_DIR, row["image"])
+            if os.path.exists(old_path):
+                os.remove(old_path)
+    await db.execute("DELETE FROM entries WHERE deleted_at IS NOT NULL")
+    await db.commit()
+    await db.close()
+    return RedirectResponse("/trash", status_code=303)

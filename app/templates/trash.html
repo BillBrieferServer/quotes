@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% set active = "trash" %}
+{% block content %}
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;margin-bottom:12px;">
+    <div class="section-header" style="margin:0;">Trash ({{ entries|length }})</div>
+    {% if entries %}
+    <form method="post" action="/trash/empty" onsubmit="return confirm('Permanently delete all items in trash?');">
+        <button type="submit" class="btn btn-danger">Empty Trash</button>
+    </form>
+    {% endif %}
+</div>
+
+{% if entries %}
+    {% for e in entries %}
+    <div class="card {{ e.type }}">
+        <div style="margin-bottom:6px;"><span class="badge {{ e.type }}">{{ e.type }}</span></div>
+        <div class="card-content">{{ e.content[:200]|bold_first_line|safe }}{% if e.content|length > 200 %}...{% endif %}</div>
+        {% if e.image %}
+        <div style="margin-top:8px;">
+            <img src="/uploads/{{ e.image }}" style="max-width:120px;border-radius:6px;">
+        </div>
+        {% endif %}
+        <div class="card-meta">Deleted {{ e.deleted_at[:16] }}</div>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+            <form method="post" action="/entry/{{ e.id }}/restore">
+                <button type="submit" class="btn btn-primary" style="width:auto;padding:6px 16px;font-size:0.85rem;">Restore</button>
+            </form>
+            <form method="post" action="/entry/{{ e.id }}/permanent-delete" onsubmit="return confirm('Permanently delete this?');">
+                <button type="submit" class="btn btn-danger">Delete Forever</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="empty">
+        <div class="icon">&#128465;</div>
+        <p>Trash is empty</p>
+    </div>
+{% endif %}
+
+{% endblock %}
